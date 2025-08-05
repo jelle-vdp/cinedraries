@@ -1,0 +1,74 @@
+---
+import Image from "astro/components/Image.astro";
+import logo from "../assets/img/logo.webp";
+---
+
+<header class="container mx-auto flex justify-end h-60">
+  <a href="/">
+    <Image src={logo} alt="Cinédraries logo" class="h-96 w-auto z-10" />
+  </a>
+  <nav
+    class="flex gap-14 justify-end items-center uppercase font-bold text-2xl leading-6"
+  >
+    <a href="/over-ons">Over ons</a>
+    <a href="/cinedraries-antwerpen"
+      ><span class="block text-center">Cinédraries</span>
+      <span class="block text-center">Antwerpen</span></a
+    >
+    <a href="/cinedraries-mechelen"
+      ><span class="block text-center">Cinédraries</span>
+      <span class="block text-center">Mechelen</span></a
+    >
+    <a href="/contact">Contact</a>
+    <a href="/schrijf-je-in" class="btn pt-4 px-3 pb-3"
+      ><span class="block text-center">Schrijf</span>
+      <span class="block text-center">je in</span></a
+    >
+  </nav>
+</header>
+
+<style lang="scss">
+  header {
+    position: relative;
+
+    img {
+      position: absolute;
+      left: 0;
+      top: 0;
+    }
+    nav {
+      a:not(.btn) {
+        position: relative;
+        &::after {
+          content: "";
+          position: absolute;
+          bottom: -8px;
+          left: 50%;
+          transform: translateX(-50%);
+          height: 4px;
+          background-color: var(--black);
+          width: 0%;
+          transition: all 0.5s ease-in-out;
+        }
+
+        &:hover {
+          &::after {
+            width: 70%;
+          }
+        }
+      }
+      .btn {
+        background-color: var(--red);
+        color: var(--white);
+        border: 2px solid var(--black);
+        filter: drop-shadow(8px 8px var(--black));
+        transition: all 0.5s ease-in-out;
+
+        &:hover {
+          transform: translate(8px, 8px);
+          filter: drop-shadow(0px 0px var(--black));
+        }
+      }
+    }
+  }
+</style>

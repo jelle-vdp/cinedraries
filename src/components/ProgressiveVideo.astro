@@ -1,0 +1,462 @@
+---
+// ProgressiveVideo.astro
+export interface Props {
+  placeholderImage: string;
+  compressedVideo: string;
+  qualityVideo: string;
+  startTimestamp: number;
+  width?: number;
+  height?: number;
+  className?: string;
+  alt?: string;
+  muted?: boolean;
+  loop?: boolean;
+  controls?: boolean;
+  preloadQuality?: "none" | "metadata" | "auto";
+  fullWidth?: boolean;
+  containerStyle?: string;
+}
+
+const {
+  placeholderImage,
+  compressedVideo,
+  qualityVideo,
+  startTimestamp,
+  width,
+  height,
+  className = "",
+  alt = "Video placeholder",
+  muted = true,
+  loop = true,
+  controls = false,
+  preloadQuality = "none",
+  fullWidth = true,
+  containerStyle = "",
+} = Astro.props;
+
+// Build the style string properly
+const baseStyle =
+  !fullWidth && width && height
+    ? `width: ${width}px; height: ${height}px;`
+    : "";
+const combinedStyle = [baseStyle, containerStyle].filter(Boolean).join(" ");
+
+// Generate unique IDs for this component instance
+const componentId = `progressive-video-${Math.random().toString(36).substr(2, 9)}`;
+const placeholderId = `${componentId}-placeholder`;
+const compressedId = `${componentId}-compressed`;
+const qualityId = `${componentId}-quality`;
+---
+
+<div
+  class={`progressive-video-container ${className} ${fullWidth ? "full-width" : ""}`}
+  data-component-id={componentId}
+  style={combinedStyle}
+>
+  <!-- Placeholder Image -->
+  <img
+    id={placeholderId}
+    src={placeholderImage}
+    alt={alt}
+    class="progressive-video-placeholder"
+  />
+
+  <!-- Compressed Video (loads first) -->
+  <video
+    id={compressedId}
+    class="progressive-video-compressed"
+    muted={muted}
+    loop={loop}
+    playsinline
+    controls={controls}
+    preload="auto"
+    data-start-time={startTimestamp}
+    style="opacity: 0;"
+  >
+    <source src={compressedVideo} type="video/mp4" />
+  </video>
+
+  <!-- High Quality Video (loads in background) -->
+  <video
+    id={qualityId}
+    class="progressive-video-quality"
+    muted={muted}
+    loop={loop}
+    playsinline
+    controls={controls}
+    preload={preloadQuality}
+    data-start-time={startTimestamp}
+    style="opacity: 0;"
+  >
+    <source src={qualityVideo} type="video/mp4" />
+  </video>
+</div>
+
+<style>
+  .progressive-video-container {
+    position: relative;
+    display: block;
+    overflow: hidden;
+    background: #000;
+  }
+
+  .progressive-video-container.full-width {
+    width: 100%;
+    height: auto;
+    /* aspect-ratio will be set dynamically by JavaScript */
+  }
+
+  .progressive-video-placeholder {
+    position: relative;
+    width: 100%;
+    height: auto;
+    object-fit: cover;
+    z-index: 3;
+    transition: opacity 0.5s ease-in-out;
+    display: block; /* Ensure it takes up space to establish container height */
+  }
+
+  .progressive-video-compressed,
+  .progressive-video-quality {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: opacity 0.5s ease-in-out;
+    outline: none;
+  }
+
+  .progressive-video-compressed {
+    z-index: 2;
+  }
+
+  .progressive-video-quality {
+    z-index: 1;
+  }
+
+  /* Ensure videos are visible when opacity is set to 1 */
+  .progressive-video-compressed[style*="opacity: 1"],
+  .progressive-video-quality[style*="opacity: 1"] {
+    display: block;
+  }
+</style>
+
+<script>
+  class ProgressiveVideoLoader {
+    constructor(componentId) {
+      this.componentId = componentId;
+      this.container = document.querySelector(
+        `[data-component-id="${componentId}"]`
+      );
+      this.placeholder = document.getElementById(`${componentId}-placeholder`);
+      this.compressedVideo = document.getElementById(
+        `${componentId}-compressed`
+      );
+      this.qualityVideo = document.getElementById(`${componentId}-quality`);
+      this.startTimestamp = parseFloat(this.compressedVideo.dataset.startTime);
+
+      this.isCompressedLoaded = false;
+      this.isQualityLoaded = false;
+      this.isCompressedPlaying = false;
+      this.hasSetInitialTime = false;
+      this.hasSwitchedToQuality = false; // Prevent multiple switches
+      this.isQualityPlaying = false;
+      this.aspectRatioSet = false;
+
+      console.log(
+        `Initializing ProgressiveVideo: ${componentId}, start time: ${this.startTimestamp}s`
+      );
+
+      this.init();
+    }
+
+    init() {
+      this.setupEventListeners();
+      this.setAspectRatioFromPlaceholder();
+      this.startLoading();
+    }
+
+    setAspectRatioFromPlaceholder() {
+      // Wait for placeholder image to load if not already loaded
+      if (this.placeholder.complete && this.placeholder.naturalWidth > 0) {
+        this.updateAspectRatio();
+      } else {
+        this.placeholder.addEventListener("load", () => {
+          this.updateAspectRatio();
+        });
+      }
+    }
+
+    updateAspectRatio() {
+      if (this.aspectRatioSet) return;
+
+      const naturalWidth = this.placeholder.naturalWidth;
+      const naturalHeight = this.placeholder.naturalHeight;
+
+      if (naturalWidth > 0 && naturalHeight > 0) {
+        const aspectRatio = naturalWidth / naturalHeight;
+        console.log(
+          `Setting aspect ratio based on placeholder: ${naturalWidth}x${naturalHeight} = ${aspectRatio.toFixed(3)}`
+        );
+
+        // Update container aspect ratio
+        this.container.style.aspectRatio = `${naturalWidth} / ${naturalHeight}`;
+
+        this.aspectRatioSet = true;
+      }
+    }
+
+    setupEventListeners() {
+      // Compressed video events
+      this.compressedVideo.addEventListener("loadedmetadata", () => {
+        console.log(
+          "Compressed video metadata loaded, duration:",
+          this.compressedVideo.duration
+        );
+        this.setInitialTime(this.compressedVideo);
+      });
+
+      this.compressedVideo.addEventListener("loadeddata", () => {
+        console.log("Compressed video data loaded");
+        this.isCompressedLoaded = true;
+        this.setInitialTime(this.compressedVideo);
+      });
+
+      this.compressedVideo.addEventListener("canplay", () => {
+        console.log("Compressed video can play");
+        this.startCompressedVideo();
+      });
+
+      this.compressedVideo.addEventListener("playing", () => {
+        console.log(
+          "Compressed video started playing at time:",
+          this.compressedVideo.currentTime
+        );
+        this.isCompressedPlaying = true;
+        this.hideElement(this.placeholder);
+        this.showElement(this.compressedVideo);
+
+        // Debug: Log video dimensions and visibility
+        console.log(
+          "Compressed video dimensions:",
+          this.compressedVideo.videoWidth,
+          "x",
+          this.compressedVideo.videoHeight
+        );
+        console.log(
+          "Compressed video element size:",
+          this.compressedVideo.offsetWidth,
+          "x",
+          this.compressedVideo.offsetHeight
+        );
+      });
+
+      this.compressedVideo.addEventListener("timeupdate", () => {
+        this.syncQualityVideo();
+      });
+
+      // Quality video events
+      this.qualityVideo.addEventListener("loadedmetadata", () => {
+        console.log(
+          "Quality video metadata loaded, duration:",
+          this.qualityVideo.duration
+        );
+        this.setInitialTime(this.qualityVideo);
+      });
+
+      this.qualityVideo.addEventListener("loadeddata", () => {
+        console.log("Quality video data loaded");
+        this.isQualityLoaded = true;
+        this.setInitialTime(this.qualityVideo);
+      });
+
+      this.qualityVideo.addEventListener("canplaythrough", () => {
+        console.log("Quality video can play through");
+        if (!this.isQualityLoaded) {
+          this.isQualityLoaded = true;
+          // Only switch if compressed is playing and we haven't switched yet
+          if (
+            this.isCompressedPlaying &&
+            !this.hasSwitchedToQuality &&
+            !this.isQualityPlaying
+          ) {
+            // Add a small delay to ensure everything is ready
+            setTimeout(() => {
+              this.switchToQualityVideo();
+            }, 200);
+          }
+        }
+      });
+
+      this.qualityVideo.addEventListener("playing", () => {
+        console.log("Quality video playing");
+        this.isQualityPlaying = true;
+        this.hideElement(this.compressedVideo);
+        // Pause compressed video immediately when quality starts playing
+        setTimeout(() => {
+          this.compressedVideo.pause();
+          console.log("Compressed video paused");
+        }, 100);
+      });
+
+      // Error handling
+      this.compressedVideo.addEventListener("error", (e) => {
+        console.error("Compressed video error:", e, this.compressedVideo.error);
+      });
+
+      this.qualityVideo.addEventListener("error", (e) => {
+        console.error("Quality video error:", e, this.qualityVideo.error);
+      });
+    }
+
+    setInitialTime(video) {
+      if (
+        !this.hasSetInitialTime &&
+        video.duration &&
+        this.startTimestamp < video.duration
+      ) {
+        console.log(
+          `Setting initial time to ${this.startTimestamp}s for`,
+          video === this.compressedVideo ? "compressed" : "quality"
+        );
+        video.currentTime = this.startTimestamp;
+        if (video === this.compressedVideo) {
+          this.hasSetInitialTime = true;
+        }
+      }
+    }
+
+    startLoading() {
+      // Start loading compressed video immediately
+      console.log("Starting to load compressed video");
+      this.compressedVideo.load();
+
+      // Start loading quality video with a longer delay to avoid conflicts
+      setTimeout(() => {
+        if (!this.hasSwitchedToQuality) {
+          console.log("Starting to load quality video");
+          this.qualityVideo.load();
+        }
+      }, 1000);
+    }
+
+    startCompressedVideo() {
+      if (this.isCompressedLoaded && !this.isCompressedPlaying) {
+        console.log("Attempting to start compressed video");
+
+        // Ensure we're at the right time
+        if (
+          Math.abs(this.compressedVideo.currentTime - this.startTimestamp) > 0.1
+        ) {
+          console.log(
+            "Seeking to",
+            this.startTimestamp,
+            "from",
+            this.compressedVideo.currentTime
+          );
+          this.compressedVideo.currentTime = this.startTimestamp;
+        }
+
+        // Small delay to ensure seeking is complete
+        setTimeout(() => {
+          this.compressedVideo
+            .play()
+            .then(() => {
+              console.log(
+                "Compressed video play() succeeded, current time:",
+                this.compressedVideo.currentTime
+              );
+              console.log("Video paused state:", this.compressedVideo.paused);
+              console.log(
+                "Video ready state:",
+                this.compressedVideo.readyState
+              );
+            })
+            .catch((e) => {
+              console.error("Error playing compressed video:", e);
+              // Fallback: try playing from the beginning
+              console.log("Trying fallback: playing from beginning");
+              this.compressedVideo.currentTime = 0;
+              this.compressedVideo.play().catch((err) => {
+                console.error("Fallback play also failed:", err);
+              });
+            });
+        }, 100);
+      }
+    }
+
+    syncQualityVideo() {
+      if (
+        this.isQualityLoaded &&
+        this.isCompressedPlaying &&
+        this.qualityVideo.paused &&
+        !this.isQualityPlaying
+      ) {
+        // Sync quality video to current time of compressed video
+        this.qualityVideo.currentTime = this.compressedVideo.currentTime;
+      }
+    }
+
+    switchToQualityVideo() {
+      if (
+        !this.isQualityLoaded ||
+        !this.isCompressedPlaying ||
+        this.hasSwitchedToQuality ||
+        this.isQualityPlaying
+      ) {
+        return;
+      }
+
+      console.log("Switching to quality video");
+      this.hasSwitchedToQuality = true; // Prevent multiple switches
+
+      // Sync time exactly
+      this.qualityVideo.currentTime = this.compressedVideo.currentTime;
+
+      // Start quality video
+      this.qualityVideo
+        .play()
+        .then(() => {
+          console.log("Quality video play() succeeded");
+          // Smooth transition to quality video
+          this.showElement(this.qualityVideo);
+        })
+        .catch((e) => {
+          console.error("Error playing quality video:", e);
+          // Reset flag if it failed so we can try again
+          this.hasSwitchedToQuality = false;
+        });
+    }
+
+    showElement(element) {
+      element.style.opacity = "1";
+    }
+
+    hideElement(element) {
+      element.style.opacity = "0";
+    }
+  }
+
+  // Initialize when DOM is loaded
+  document.addEventListener("DOMContentLoaded", initializeComponents);
+
+  // Also handle cases where script loads after DOM
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initializeComponents);
+  } else {
+    initializeComponents();
+  }
+
+  function initializeComponents() {
+    const containers = document.querySelectorAll(
+      '[data-component-id^="progressive-video-"]:not([data-initialized])'
+    );
+    containers.forEach((container) => {
+      const componentId = container.getAttribute("data-component-id");
+      new ProgressiveVideoLoader(componentId);
+      container.setAttribute("data-initialized", "true");
+    });
+  }
+</script>

@@ -1,11 +1,80 @@
 ---
-import Welcome from '../components/Welcome.astro';
-import Layout from '../layouts/Layout.astro';
+import Layout from "../layouts/Layout.astro";
 
-// Welcome to Astro! Wondering what to do next? Check out the Astro documentation at https://docs.astro.build
-// Don't want to use any of this? Delete everything in this file, the `assets`, `components`, and `layouts` directories, and start fresh.
+import ProgressiveVideo from "../components/ProgressiveVideo.astro";
+import HQShowreel from "../assets/vid/web_showreel_cinedraries.mp4";
+import LQShowreel from "../assets/vid/web_showreel_cinedraries--extra-compressed.mp4";
+import PlaceholderShowreel from "../assets/img/firstframe--5-5s.webp";
 ---
 
 <Layout>
-	<Welcome />
+  <div class="container mx-auto">
+    <div class="relative">
+      <ProgressiveVideo
+        placeholderImage={PlaceholderShowreel.src}
+        compressedVideo={LQShowreel}
+        qualityVideo={HQShowreel}
+        startTimestamp={5.5}
+        alt="Showreel Cinédraries"
+        containerStyle="border:2px solid var(--black); box-shadow: 8px 8px var(--black);"
+      />
+      <p class="text-left text-8xl font-bold uppercase">
+        <span class="block">Let's</span>
+        <span class="block">Make</span>
+        <span class="block">Movies</span>
+      </p>
+      <a href="schrijf-je-in" class="text-right text-8xl font-bold uppercase">
+        <span class="block">Join</span>
+        <span class="block">Ciné</span>
+        <span class="block">Draries</span>
+      </a>
+    </div>
+  </div>
 </Layout>
+
+<style lang="scss">
+  .text-left,
+  .text-right {
+    color: var(--white);
+    position: absolute;
+    bottom: 0;
+    text-shadow: 
+    /* Text stroke effect */
+      -2px -2px 0 var(--black),
+      2px -2px 0 var(--black),
+      -2px 2px 0 var(--black),
+      2px 2px 0 var(--black),
+      -2px 0px 0 var(--black),
+      2px 0px 0 var(--black),
+      0px -2px 0 var(--black),
+      0px 2px 0 var(--black),
+      /* Drop shadow */ 8px 8px 0 var(--black);
+    z-index: 10;
+  }
+
+  .text-left {
+    left: 1rem;
+  }
+
+  .text-right {
+    right: 1rem;
+    transition: all 0.5s ease-in-out;
+    cursor: pointer;
+
+    &:hover {
+      color: var(--red);
+      text-shadow: 
+    /* Text stroke effect */
+        -2px -2px 0 var(--black),
+        2px -2px 0 var(--black),
+        -2px 2px 0 var(--black),
+        2px 2px 0 var(--black),
+        -2px 0px 0 var(--black),
+        2px 0px 0 var(--black),
+        0px -2px 0 var(--black),
+        0px 2px 0 var(--black);
+
+      transform: translate(8px, 8px);
+    }
+  }
+</style>
