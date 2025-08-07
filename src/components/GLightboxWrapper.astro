@@ -1,0 +1,91 @@
+---
+export interface Props {
+  src: string; // Image source for the lightbox (should be the .src property)
+  alt?: string; // Alt text for accessibility
+  description?: string; // Optional description shown in lightbox
+  gallery?: string; // Gallery group name (images with same gallery name will be grouped)
+  class?: string; // Additional CSS classes
+}
+
+const {
+  src,
+  alt = "",
+  description = "",
+  gallery = "default",
+  class: className = "",
+} = Astro.props;
+
+// Generate unique data attributes for GLightbox
+const lightboxData = {
+  "data-glightbox": description ? `description: ${description}` : "",
+  "data-gallery": gallery,
+  "data-title": alt,
+};
+---
+
+<a
+  href={src}
+  class={`glightbox-trigger ${className}`}
+  {...lightboxData}
+  aria-label={`Open ${alt} in lightbox`}
+>
+  <slot />
+</a>
+
+<script>
+  import GLightbox from "glightbox";
+  import "glightbox/dist/css/glightbox.css";
+
+  // Use a more robust initialization approach
+  function initializeGLightbox() {
+    // Destroy existing instance if it exists
+    if (window.glightboxInstance) {
+      window.glightboxInstance.destroy();
+    }
+
+    // Create new instance
+    window.glightboxInstance = GLightbox({
+      selector: ".glightbox-trigger",
+      touchNavigation: true,
+      loop: true,
+      autoplayVideos: false,
+      closeButton: true,
+      escapeKey: true,
+      openEffect: "zoom",
+      closeEffect: "zoom",
+      slideEffect: "slide",
+    });
+
+    console.log(
+      "GLightbox initialized with",
+      document.querySelectorAll(".glightbox-trigger").length,
+      "triggers"
+    );
+  }
+
+  // Initialize immediately if DOM is ready
+  if (document.readyState !== "loading") {
+    initializeGLightbox();
+  } else {
+    document.addEventListener("DOMContentLoaded", initializeGLightbox);
+  }
+
+  // Re-initialize when navigating in Astro (for SPA mode)
+  document.addEventListener("astro:page-load", initializeGLightbox);
+</script>
+
+<style>
+  .glightbox-trigger {
+    cursor: zoom-in;
+    display: block;
+    transition: transform 0.2s ease;
+  }
+
+  .glightbox-trigger:hover {
+    transform: scale(1.02);
+  }
+
+  .glightbox-trigger:active {
+    transform: scale(0.98);
+  }
+</style>

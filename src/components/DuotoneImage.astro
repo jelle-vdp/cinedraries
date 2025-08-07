@@ -1,0 +1,169 @@
+---
+export interface Props {
+  src: string;
+  alt: string;
+  backgroundColor: string; // Background color (your yellow)
+  stampColor: string; // Stamp color (your black)
+  contrast?: number; // Contrast adjustment (1 = normal)
+  hoverNormal?: boolean; // Show normal colors on hover
+  fixedHeight?: string; // CSS height value (e.g., "300px", "20rem")
+  aspectRatio?: string; // CSS aspect-ratio value (e.g., "16/9", "1/1", "4/3")
+  class?: string;
+
+  // Responsive breakpoint props
+  breakpoint1?: number; // e.g., 1279
+  fixedBreakpoint1Height?: string; // e.g., "300px"
+  breakpoint2?: number; // e.g., 1023
+  fixedBreakpoint2Height?: string; // e.g., "250px"
+  breakpoint3?: number; // e.g., 767
+  fixedBreakpoint3Height?: string; // e.g., "200px"
+  breakpoint4?: number; // e.g., 639
+  fixedBreakpoint4Height?: string; // e.g., "180px"
+  breakpoint5?: number; // e.g., 479
+  fixedBreakpoint5Height?: string; // e.g., "150px"
+}
+
+const {
+  src,
+  alt,
+  backgroundColor,
+  stampColor,
+  contrast = 1,
+  hoverNormal = true,
+  fixedHeight,
+  aspectRatio,
+  class: className = "",
+  breakpoint1,
+  fixedBreakpoint1Height,
+  breakpoint2,
+  fixedBreakpoint2Height,
+  breakpoint3,
+  fixedBreakpoint3Height,
+  breakpoint4,
+  fixedBreakpoint4Height,
+  breakpoint5,
+  fixedBreakpoint5Height,
+} = Astro.props;
+
+// Generate unique component ID to avoid conflicts
+const componentId = `duotone-${Math.random().toString(36).substr(2, 9)}`;
+
+// Build dynamic styles
+let calculatedWidth = "";
+if (fixedHeight && aspectRatio) {
+  const [w, h] = aspectRatio.split("/").map(Number);
+  const heightValue = parseFloat(fixedHeight);
+  const widthValue = (heightValue * w) / h;
+  calculatedWidth = `width: ${widthValue}px;`;
+}
+
+const containerStyles = [
+  fixedHeight ? `height: ${fixedHeight};` : "",
+  aspectRatio && !fixedHeight ? `aspect-ratio: ${aspectRatio};` : "",
+  calculatedWidth,
+]
+  .filter(Boolean)
+  .join(" ");
+
+// Generate responsive CSS
+let responsiveCSS = "";
+const breakpoints = [
+  { bp: breakpoint1, height: fixedBreakpoint1Height },
+  { bp: breakpoint2, height: fixedBreakpoint2Height },
+  { bp: breakpoint3, height: fixedBreakpoint3Height },
+  { bp: breakpoint4, height: fixedBreakpoint4Height },
+  { bp: breakpoint5, height: fixedBreakpoint5Height },
+];
+
+breakpoints.forEach(({ bp, height }) => {
+  if (bp && height) {
+    let calculatedResponsiveWidth = "";
+    if (aspectRatio) {
+      const [w, h] = aspectRatio.split("/").map(Number);
+      const heightValue = parseFloat(height);
+      const widthValue = (heightValue * w) / h;
+      calculatedResponsiveWidth = `width: ${widthValue}px;`;
+    }
+
+    responsiveCSS += `
+      @media (max-width: ${bp}px) {
+        .${componentId} {
+          height: ${height} !important;
+          ${calculatedResponsiveWidth}
+        }
+      }
+    `;
+  }
+});
+---
+
+<div
+  class={`stamp-container ${componentId} ${className} ${hoverNormal ? "hover-normal" : ""}`}
+  style={containerStyles}
+>
+  <!-- Background layer (your yellow) -->
+  <div class="background-layer" style={`background-color: ${backgroundColor};`}>
+  </div>
+
+  <!-- Original image for hover -->
+  {hoverNormal && <img src={src} alt={alt} class="original-image" />}
+
+  <!-- Stamp layer (creates the PNG-like effect) -->
+  <img
+    src={src}
+    alt=""
+    class="stamp-image"
+    style={`filter: grayscale(1) contrast(${contrast}); mix-blend-mode: multiply;`}
+  />
+</div>
+
+<!-- Responsive styles -->
+{responsiveCSS && <style set:html={responsiveCSS} />}
+
+<style define:vars={{ stampColor }}>
+  .stamp-container {
+    position: relative;
+    display: inline-block;
+    width: 100%;
+    overflow: hidden;
+  }
+
+  .background-layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+  }
+
+  .original-image {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0;
+    transition: opacity 0.3s ease-in-out;
+    z-index: 10;
+  }
+
+  .stamp-image {
+    position: relative;
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: 2;
+    transition: opacity 0.3s ease-in-out;
+  }
+
+  .stamp-container.hover-normal:hover .original-image {
+    opacity: 1;
+  }
+
+  .stamp-container.hover-normal:hover .stamp-image {
+    opacity: 0;
+  }
+</style>

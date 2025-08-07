@@ -5,64 +5,133 @@ import ProgressiveVideo from "../components/ProgressiveVideo.astro";
 import HQShowreel from "../assets/vid/web_showreel_cinedraries.mp4";
 import LQShowreel from "../assets/vid/web_showreel_cinedraries--extra-compressed.mp4";
 import PlaceholderShowreel from "../assets/img/firstframe--5-5s.webp";
+
+import Card from "../components/Card.astro";
+
+import Marquee from "../components/Marquee.astro";
+
+import GLightboxWrapper from "../components/GLightboxWrapper.astro";
+import DuotoneImage from "../components/DuotoneImage.astro";
+
+const MarqueeImages = [
+  { src: "/assets/img/photos/1.webp" },
+  { src: "/assets/img/photos/2.webp" },
+  { src: "/assets/img/photos/3.webp" },
+  { src: "/assets/img/photos/4.webp" },
+  { src: "/assets/img/photos/5.webp" },
+];
 ---
 
 <Layout>
-  <div class="container mx-auto">
-    <div class="relative">
+  <div class="container mx-auto pt-16 px-4 lg:px-10 2xl:px-16 3xl:px-28">
+    <section class="relative mb-16 md:mb-24">
       <ProgressiveVideo
         placeholderImage={PlaceholderShowreel.src}
         compressedVideo={LQShowreel}
         qualityVideo={HQShowreel}
         startTimestamp={5.5}
-        alt="Showreel Cinédraries"
-        containerStyle="border:2px solid var(--black); box-shadow: 8px 8px var(--black);"
+        portraitAspectRatio="1 / 1"
+        alt="Cinédraries showreel"
+        containerStyle="border: 2px solid var(--black); box-shadow: 8px 8px var(--black);"
+        maxWidthBreakpoint1={1279}
+        breakpointStyles1="box-shadow: 6px 6px var(--black);"
       />
-      <p class="text-left text-8xl font-bold uppercase">
+      <p
+        class="text-left text-4xl portrait:text-5xl lg:text-6xl xl:text-7xl 2xl:text-8xl font-bold uppercase"
+      >
         <span class="block">Let's</span>
         <span class="block">Make</span>
         <span class="block">Movies</span>
       </p>
-      <a href="schrijf-je-in" class="text-right text-8xl font-bold uppercase">
+      <a
+        href="schrijf-je-in"
+        class="text-right text-4xl portrait:text-5xl lg:text-6xl xl:text-7xl 2xl:text-8xl font-bold uppercase"
+      >
         <span class="block">Join</span>
         <span class="block">Ciné</span>
         <span class="block">Draries</span>
       </a>
-    </div>
+    </section>
+    <section
+      class="mx-20 md:max-w-prose md:mx-auto text-center leading-5 mb-16 md:mb-24"
+    >
+      <p class="mb-4">
+        Cinedraries is een filmatelier voor jongeren van 16 tot 24 jaar die
+        willen leren filmen, monteren, acteren of regisseren. Sinds 2019 biedt
+        het wekelijkse lessen in een echte cinema, waar je samen met andere
+        jonge makers werkt aan sketches en kortfilms. Je leert alles van idee
+        tot montage, en maakt elk jaar een echte kortfilm met professionele
+        middelen. Of je nu droomt van het witte doek of gewoon graag praat over
+        film: bij Cinedraries krijg je de kans om jouw stem te laten horen.
+      </p><p>
+        Wij werken met twee groepen, een in Antwerpen en een in Mechelen.
+      </p>
+    </section>
+    <section
+      class="grid grid-cols-1 md:grid-cols-2 gap-16 mx-32 md:mx-0 xl:gap-8 lg:mx-32 xl:mx-52 2xl:mx-96 mb-24"
+    >
+      <div class="col-span-1">
+        <Card
+          title="Cinédraries Antwerpen"
+          startDate="Binnenkort meer info over de startdatum"
+          timeslot="Elke vrijdagavond van 18u30 tot 21u"
+          location="Cinema Rix"
+          address="Gryspeersstraat 86, 2100 Deurne"
+          moreInfoLink="/cinedraries-antwerpen"
+        />
+      </div>
+      <div class="col-span-1">
+        <Card
+          title="Cinédraries Mechelen"
+          startDate="Vanaf september 2025"
+          timeslot="Elke woensdagavond van 19u tot 21u30"
+          location="Cinema Lumière Mechelen"
+          address="Frederik de Merodestraat 28, 2800 Mechelen"
+          moreInfoLink="/cinedraries-mechelen"
+        />
+      </div>
+    </section>
   </div>
-</Layout>
+  <section class="mb-32 md:mb-48">
+    <Marquee speed="normal" class="photoreel-marquee">
+      {
+        MarqueeImages.map((img, i) => {
+          return (
+            <GLightboxWrapper
+              src={img.src}
+              alt={`Cinédraries ${i + 1}`}
+              description={`Foto ${i + 1} van de Cinédraries workshop`}
+              gallery="cinedraries-photos"
+            >
+              <DuotoneImage
+                src={img.src}
+                alt={`Cinédraries ${i + 1}`}
+                backgroundColor="#f0b236"
+                stampColor="#000000"
+                contrast={1.2}
+                fixedHeight="300px"
+                breakpoint1={1279}
+                fixedBreakpoint1Height="300px"
+                breakpoint2={1023}
+                fixedBreakpoint2Height="200px"
+                breakpoint3={767}
+                fixedBreakpoint3Height="150px"
+                aspectRatio="4/3"
+                class="cursor-zoom-in rounded-xl"
+              />
+            </GLightboxWrapper>
+          );
+        })
+      }
+    </Marquee>
+  </section>
 
-<style lang="scss">
-  .text-left,
-  .text-right {
-    color: var(--white);
-    position: absolute;
-    bottom: 0;
-    text-shadow: 
-    /* Text stroke effect */
-      -2px -2px 0 var(--black),
-      2px -2px 0 var(--black),
-      -2px 2px 0 var(--black),
-      2px 2px 0 var(--black),
-      -2px 0px 0 var(--black),
-      2px 0px 0 var(--black),
-      0px -2px 0 var(--black),
-      0px 2px 0 var(--black),
-      /* Drop shadow */ 8px 8px 0 var(--black);
-    z-index: 10;
-  }
-
-  .text-left {
-    left: 1rem;
-  }
-
-  .text-right {
-    right: 1rem;
-    transition: all 0.5s ease-in-out;
-    cursor: pointer;
-
-    &:hover {
-      color: var(--red);
+  <style lang="scss">
+    .text-left,
+    .text-right {
+      color: var(--white);
+      position: absolute;
+      bottom: 0;
       text-shadow: 
     /* Text stroke effect */
         -2px -2px 0 var(--black),
@@ -72,9 +141,86 @@ import PlaceholderShowreel from "../assets/img/firstframe--5-5s.webp";
         -2px 0px 0 var(--black),
         2px 0px 0 var(--black),
         0px -2px 0 var(--black),
-        0px 2px 0 var(--black);
+        0px 2px 0 var(--black),
+        /* Drop shadow */ 8px 8px 0 var(--black);
+      z-index: 10;
 
-      transform: translate(8px, 8px);
+      @media (max-width: 1023px) {
+        text-shadow: 
+        /* Text stroke effect */
+          -2px -2px 0 var(--black),
+          2px -2px 0 var(--black),
+          -2px 2px 0 var(--black),
+          2px 2px 0 var(--black),
+          -2px 0px 0 var(--black),
+          2px 0px 0 var(--black),
+          0px -2px 0 var(--black),
+          0px 2px 0 var(--black),
+          /* Drop shadow */ 4px 4px 0 var(--black);
+      }
     }
-  }
-</style>
+
+    .text-left {
+      left: 1rem;
+    }
+
+    .text-right {
+      right: 1rem;
+      transition: all 0.5s ease-in-out;
+      cursor: pointer;
+
+      &:hover {
+        color: var(--red);
+        text-shadow: 
+    /* Text stroke effect */
+          -2px -2px 0 var(--black),
+          2px -2px 0 var(--black),
+          -2px 2px 0 var(--black),
+          2px 2px 0 var(--black),
+          -2px 0px 0 var(--black),
+          2px 0px 0 var(--black),
+          0px -2px 0 var(--black),
+          0px 2px 0 var(--black);
+
+        transform: translate(8px, 8px);
+      }
+    }
+
+    :global(.photoreel-marquee) {
+      position: relative;
+      background-color: var(
+        --black
+      ); /* Add black background to the whole marquee */
+    }
+
+    :global(.photoreel-marquee .marquee-track) {
+      background-color: var(--black); /* Ensure the scrolling track is black */
+    }
+
+    :global(.photoreel-marquee .marquee-items) {
+      position: relative;
+      background-color: var(--black); /* Keep this for the items container */
+
+      &::before,
+      &::after {
+        content: "";
+        position: absolute;
+        left: -200px;
+        width: calc(100% + 400px);
+        height: 34px;
+        background-image: url("/assets/svg/photoreelpattern.svg");
+        background-repeat: repeat-x;
+        z-index: 9;
+        pointer-events: none;
+      }
+
+      &::before {
+        top: 0;
+      }
+
+      &::after {
+        bottom: 0;
+      }
+    }
+  </style>
+</Layout>

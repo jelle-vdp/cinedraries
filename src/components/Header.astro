@@ -3,38 +3,50 @@ import Image from "astro/components/Image.astro";
 import logo from "../assets/img/logo.webp";
 ---
 
-<header class="container mx-auto flex justify-end h-60">
-  <a href="/">
-    <Image src={logo} alt="Cinédraries logo" class="h-96 w-auto z-10" />
-  </a>
-  <nav
-    class="flex gap-14 justify-end items-center uppercase font-bold text-2xl leading-6"
+<header>
+  <div
+    class="container relative mx-auto px-4 lg:px-10 2xl:px-16 3xl:px-28 flex justify-end h-[12vh] xl:h-[17vh] 2xl:h-[15vh]"
   >
-    <a href="/over-ons">Over ons</a>
-    <a href="/cinedraries-antwerpen"
-      ><span class="block text-center">Cinédraries</span>
-      <span class="block text-center">Antwerpen</span></a
+    <a href="/">
+      <Image
+        src={logo}
+        alt="Cinédraries logo"
+        class="h-52 xl:h-64 2xl:h-72 3xl:h-96 w-auto -top-6 xl:-top-8 2xl:-top-12 left-8 xl:left-12 2xl:left-16 3xl:left-28"
+      />
+    </a>
+    <nav
+      class="navigation-wrapper flex gap-10 xl:gap-14 justify-end items-center uppercase font-bold text-lg leading-4 xl:text-xl 2xl:text-2xl xl:leading-5 2xl:leading-6"
     >
-    <a href="/cinedraries-mechelen"
-      ><span class="block text-center">Cinédraries</span>
-      <span class="block text-center">Mechelen</span></a
-    >
-    <a href="/contact">Contact</a>
-    <a href="/schrijf-je-in" class="btn pt-4 px-3 pb-3"
-      ><span class="block text-center">Schrijf</span>
-      <span class="block text-center">je in</span></a
-    >
-  </nav>
+      <a href="/over-ons">Over ons</a>
+      <a href="/cinedraries-antwerpen"
+        ><span class="block text-center">Cinédraries</span>
+        <span class="block text-center">Antwerpen</span></a
+      >
+      <a href="/cinedraries-mechelen"
+        ><span class="block text-center">Cinédraries</span>
+        <span class="block text-center">Mechelen</span></a
+      >
+      <a href="/contact">Contact</a>
+      <a href="/schrijf-je-in" class="btn pt-4 px-3 pb-3"
+        ><span class="block text-center">Schrijf</span>
+        <span class="block text-center">je in</span></a
+      >
+    </nav>
+    <button class="hamburger h-24 flex items-center justify-center lg:hidden">
+      <span class="line"></span>
+    </button>
+  </div>
 </header>
 
 <style lang="scss">
   header {
-    position: relative;
+    @media (max-width: 1023px) {
+      border-bottom: 2px solid var(--black);
+    }
 
     img {
       position: absolute;
-      left: 0;
-      top: 0;
+      z-index: 100;
     }
     nav {
       a:not(.btn) {
@@ -64,11 +76,108 @@ import logo from "../assets/img/logo.webp";
         filter: drop-shadow(8px 8px var(--black));
         transition: all 0.5s ease-in-out;
 
+        @media (max-width: 1279px) {
+          filter: drop-shadow(4px 4px var(--black));
+        }
+
         &:hover {
           transform: translate(8px, 8px);
           filter: drop-shadow(0px 0px var(--black));
+
+          @media (max-width: 1279px) {
+            transform: translate(4px, 4px);
+          }
+        }
+      }
+
+      @media (max-width: 1023px) {
+        transition: all 2s ease-in-out;
+        flex-direction: column;
+        gap: 2rem;
+        background-color: var(--yellow);
+        position: absolute;
+        bottom: 100%;
+        padding-top: 2rem;
+        padding-bottom: 2rem;
+        left: 1rem;
+        right: 1rem;
+        width: calc(100% - 2rem);
+        transform: translateY(-12vh);
+        z-index: 99;
+        border: 2px solid var(--black);
+        border-top: 0;
+
+        a:not(:last-child):not(:nth-last-child(2)) {
+          position: relative;
+
+          &::after {
+            content: "";
+            position: absolute;
+            bottom: -1rem;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 25px;
+            height: 2px;
+            background-color: var(--black);
+          }
+        }
+
+        &.navigation-wrapper--open {
+          transform: translateY(calc(100% + 12vh + 1px));
+        }
+      }
+    }
+    button {
+      .line {
+        width: 40px;
+        height: 4px;
+        background-color: var(--black);
+        position: relative;
+        transition: all 0.5s ease-in-out;
+
+        &::before,
+        &::after {
+          content: "";
+          position: absolute;
+          left: 0;
+          width: 40px;
+          height: 4px;
+          background-color: var(--black);
+          opacity: 1;
+          transition: all 0.5s ease-in-out;
+        }
+
+        &::before {
+          top: -10px;
+          transform: rotate(-10deg);
+        }
+
+        &::after {
+          bottom: -10px;
+        }
+      }
+
+      &.hamburger--open {
+        transform: rotate(45deg);
+
+        .line {
+          &::after {
+            opacity: 0;
+          }
+          &::before {
+            transform: rotate(90deg) translateX(10px);
+          }
         }
       }
     }
   }
 </style>
+
+<script>
+  const toggleButton = document.querySelector(".hamburger");
+  const navigationWrapper = document.querySelector(".navigation-wrapper");
+  toggleButton.addEventListener("click", () => {
+    toggleButton.classList.toggle("hamburger--open");
+    navigationWrapper.classList.toggle("navigation-wrapper--open");
+  });
+</script>

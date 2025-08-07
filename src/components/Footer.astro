@@ -1,0 +1,82 @@
+---
+import Image from "astro/components/Image.astro";
+import logo from "../assets/img/logo.webp";
+---
+
+<footer>
+  <div class="container mx-auto px-8 relative pt-24 lg:pt-30 xl:pt-48 pb-14">
+    <a href="/" class="logo">
+      <Image
+        src={logo}
+        alt="Cinédraries logo"
+        class="h-64 lg:h-80 xl:h-96 w-auto z-10"
+      />
+    </a>
+    <div
+      class="credits flex flex-col text-xxl md:text-2xl font-bold text-center"
+    >
+      <p class="flex items-end justify-center gap-2">
+        <span
+          class="text-xxs lg:text-sm font-medium leading-2.5 text-right lowercase mb-1"
+          >een concept van</span
+        >
+        <span class="flex gap-4 md:gap-6 lg:gap-8">
+          <a href="https://manueljanssens.be/" class="z-20">MANUEL JANSSENS</a>
+          <span>ROBBIN ROOZE</span>
+        </span>
+      </p>
+      <p class="flex items-end justify-center gap-2">
+        <span
+          class="text-xxs lg:text-sm font-medium leading-2.5 text-right lowercase mb-1"
+          >in samenwerking met</span
+        >
+        <span class="flex gap-4 md:gap-6 lg:gap-8 text-left leading-5">
+          <a href="https://www.skillz.be/">SKILLZ VZW</a><a
+            href="https://www.deklap.be/">CINEMA RIX</a
+          ><a href="https://lumiere-mechelen.be/">LUMIERERE MECHELEN</a>
+        </span>
+      </p>
+      <p class="flex items-end justify-center gap-2">
+        <span
+          class="text-xxs lg:text-sm font-medium leading-2.5 text-right lowercase mb-1"
+          >social media</span
+        >
+        <span class="flex gap-4 md:gap-6 lg:gap-8 mr-4">
+          <a href="https://www.instagram.com/cinedraries/">INSTAGRAM</a><a
+            href="https://www.facebook.com/Cinedraries/">FACEBOOK</a
+          ><a href="https://www.tiktok.com/@cinedraries">TIKTOK</a>
+        </span>
+        <span
+          class="text-xxs lg:text-sm font-medium leading-2.5 text-right lowercase mb-1"
+          >copyright {new Date().getFullYear()}</span
+        > CINEDRARIES
+      </p>
+    </div>
+
+    <style lang="scss">
+      footer {
+        background-color: var(--black);
+        color: var(--white);
+
+        .logo {
+          position: absolute;
+          left: 50%;
+          transform: translateX(-50%);
+          top: -10rem;
+          height: 10rem;
+          width: auto;
+        }
+
+        .credits {
+          a {
+            transition: all 0.5s ease-in-out;
+
+            &:hover {
+              color: var(--red);
+            }
+          }
+        }
+      }
+    </style>
+  </div>
+</footer>

@@ -15,6 +15,18 @@ export interface Props {
   preloadQuality?: "none" | "metadata" | "auto";
   fullWidth?: boolean;
   containerStyle?: string;
+  portraitAspectRatio?: string;
+  landscapeAspectRatio?: string;
+  maxWidthBreakpoint1?: number;
+  breakpointStyles1?: string;
+  maxWidthBreakpoint2?: number;
+  breakpointStyles2?: string;
+  maxWidthBreakpoint3?: number;
+  breakpointStyles3?: string;
+  maxWidthBreakpoint4?: number;
+  breakpointStyles4?: string;
+  maxWidthBreakpoint5?: number;
+  breakpointStyles5?: string;
 }
 
 const {
@@ -32,6 +44,18 @@ const {
   preloadQuality = "none",
   fullWidth = true,
   containerStyle = "",
+  portraitAspectRatio,
+  landscapeAspectRatio,
+  maxWidthBreakpoint1,
+  breakpointStyles1 = "",
+  maxWidthBreakpoint2,
+  breakpointStyles2 = "",
+  maxWidthBreakpoint3,
+  breakpointStyles3 = "",
+  maxWidthBreakpoint4,
+  breakpointStyles4 = "",
+  maxWidthBreakpoint5,
+  breakpointStyles5 = "",
 } = Astro.props;
 
 // Build the style string properly
@@ -39,6 +63,7 @@ const baseStyle =
   !fullWidth && width && height
     ? `width: ${width}px; height: ${height}px;`
     : "";
+
 const combinedStyle = [baseStyle, containerStyle].filter(Boolean).join(" ");
 
 // Generate unique IDs for this component instance
@@ -51,6 +76,8 @@ const qualityId = `${componentId}-quality`;
 <div
   class={`progressive-video-container ${className} ${fullWidth ? "full-width" : ""}`}
   data-component-id={componentId}
+  data-portrait-aspect={portraitAspectRatio}
+  data-landscape-aspect={landscapeAspectRatio}
   style={combinedStyle}
 >
   <!-- Placeholder Image -->
@@ -98,6 +125,10 @@ const qualityId = `${componentId}-quality`;
     display: block;
     overflow: hidden;
     background: #000;
+
+    @media (max-width: 1279px){
+      box-shadow: 6px 6px var(--black) !important;
+    }
   }
 
   .progressive-video-container.full-width {
@@ -141,33 +172,81 @@ const qualityId = `${componentId}-quality`;
   .progressive-video-quality[style*="opacity: 1"] {
     display: block;
   }
+
+
+
 </style>
+
+{maxWidthBreakpoint1 && breakpointStyles1 && (
+  <style is:inline>
+    {`@media (max-width: ${maxWidthBreakpoint1}px) {
+      [data-component-id="${componentId}"] {
+        ${breakpointStyles1}
+      }
+    }`}
+  </style>
+)}
+
+{maxWidthBreakpoint2 && breakpointStyles2 && (
+  <style is:inline>
+    {`@media (max-width: ${maxWidthBreakpoint2}px) {
+      [data-component-id="${componentId}"] {
+        ${breakpointStyles2}
+      }
+    }`}
+  </style>
+)}
+
+{maxWidthBreakpoint3 && breakpointStyles3 && (
+  <style is:inline>
+    {`@media (max-width: ${maxWidthBreakpoint3}px) {
+      [data-component-id="${componentId}"] {
+        ${breakpointStyles3}
+      }
+    }`}
+  </style>
+)}
+
+{maxWidthBreakpoint4 && breakpointStyles4 && (
+  <style is:inline>
+    {`@media (max-width: ${maxWidthBreakpoint4}px) {
+      [data-component-id="${componentId}"] {
+        ${breakpointStyles4}
+      }
+    }`}
+  </style>
+)}
+
+{maxWidthBreakpoint5 && breakpointStyles5 && (
+  <style is:inline>
+    {`@media (max-width: ${maxWidthBreakpoint5}px) {
+      [data-component-id="${componentId}"] {
+        ${breakpointStyles5}
+      }
+    }`}
+  </style>
+)}
 
 <script>
   class ProgressiveVideoLoader {
     constructor(componentId) {
       this.componentId = componentId;
-      this.container = document.querySelector(
-        `[data-component-id="${componentId}"]`
-      );
-      this.placeholder = document.getElementById(`${componentId}-placeholder`);
-      this.compressedVideo = document.getElementById(
-        `${componentId}-compressed`
-      );
-      this.qualityVideo = document.getElementById(`${componentId}-quality`);
+      this.container = document.querySelector('[data-component-id="' + componentId + '"]');
+      this.placeholder = document.getElementById(componentId + '-placeholder');
+      this.compressedVideo = document.getElementById(componentId + '-compressed');
+      this.qualityVideo = document.getElementById(componentId + '-quality');
       this.startTimestamp = parseFloat(this.compressedVideo.dataset.startTime);
+
+      this.portraitAspectRatio = this.container.getAttribute('data-portrait-aspect');
+      this.landscapeAspectRatio = this.container.getAttribute('data-landscape-aspect');
 
       this.isCompressedLoaded = false;
       this.isQualityLoaded = false;
       this.isCompressedPlaying = false;
       this.hasSetInitialTime = false;
-      this.hasSwitchedToQuality = false; // Prevent multiple switches
+      this.hasSwitchedToQuality = false;
       this.isQualityPlaying = false;
       this.aspectRatioSet = false;
-
-      console.log(
-        `Initializing ProgressiveVideo: ${componentId}, start time: ${this.startTimestamp}s`
-      );
 
       this.init();
     }
@@ -175,11 +254,11 @@ const qualityId = `${componentId}-quality`;
     init() {
       this.setupEventListeners();
       this.setAspectRatioFromPlaceholder();
+      this.setupOrientationListener();
       this.startLoading();
     }
 
     setAspectRatioFromPlaceholder() {
-      // Wait for placeholder image to load if not already loaded
       if (this.placeholder.complete && this.placeholder.naturalWidth > 0) {
         this.updateAspectRatio();
       } else {
@@ -190,99 +269,86 @@ const qualityId = `${componentId}-quality`;
     }
 
     updateAspectRatio() {
-      if (this.aspectRatioSet) return;
-
       const naturalWidth = this.placeholder.naturalWidth;
       const naturalHeight = this.placeholder.naturalHeight;
 
       if (naturalWidth > 0 && naturalHeight > 0) {
-        const aspectRatio = naturalWidth / naturalHeight;
-        console.log(
-          `Setting aspect ratio based on placeholder: ${naturalWidth}x${naturalHeight} = ${aspectRatio.toFixed(3)}`
-        );
-
-        // Update container aspect ratio
-        this.container.style.aspectRatio = `${naturalWidth} / ${naturalHeight}`;
-
+        this.adjustAspectRatioForOrientation();
         this.aspectRatioSet = true;
       }
     }
 
+    setupOrientationListener() {
+      const mediaQuery = window.matchMedia("(orientation: portrait)");
+      mediaQuery.addEventListener("change", () => {
+        this.adjustAspectRatioForOrientation();
+      });
+    }
+
+    adjustAspectRatioForOrientation() {
+      if (!this.aspectRatioSet && !this.placeholder.complete) return;
+
+      const isPortrait = window.matchMedia("(orientation: portrait)").matches;
+      let aspectRatio;
+
+      if (isPortrait && this.portraitAspectRatio) {
+        aspectRatio = this.portraitAspectRatio;
+      } else if (!isPortrait && this.landscapeAspectRatio) {
+        aspectRatio = this.landscapeAspectRatio;
+      } else {
+        const naturalWidth = this.placeholder.naturalWidth;
+        const naturalHeight = this.placeholder.naturalHeight;
+        if (naturalWidth > 0 && naturalHeight > 0) {
+          aspectRatio = naturalWidth + ' / ' + naturalHeight;
+        }
+      }
+
+      if (aspectRatio) {
+        this.container.style.aspectRatio = aspectRatio;
+      }
+    }
+
     setupEventListeners() {
-      // Compressed video events
       this.compressedVideo.addEventListener("loadedmetadata", () => {
-        console.log(
-          "Compressed video metadata loaded, duration:",
-          this.compressedVideo.duration
-        );
         this.setInitialTime(this.compressedVideo);
       });
 
       this.compressedVideo.addEventListener("loadeddata", () => {
-        console.log("Compressed video data loaded");
         this.isCompressedLoaded = true;
         this.setInitialTime(this.compressedVideo);
       });
 
       this.compressedVideo.addEventListener("canplay", () => {
-        console.log("Compressed video can play");
         this.startCompressedVideo();
       });
 
       this.compressedVideo.addEventListener("playing", () => {
-        console.log(
-          "Compressed video started playing at time:",
-          this.compressedVideo.currentTime
-        );
         this.isCompressedPlaying = true;
         this.hideElement(this.placeholder);
         this.showElement(this.compressedVideo);
-
-        // Debug: Log video dimensions and visibility
-        console.log(
-          "Compressed video dimensions:",
-          this.compressedVideo.videoWidth,
-          "x",
-          this.compressedVideo.videoHeight
-        );
-        console.log(
-          "Compressed video element size:",
-          this.compressedVideo.offsetWidth,
-          "x",
-          this.compressedVideo.offsetHeight
-        );
       });
 
       this.compressedVideo.addEventListener("timeupdate", () => {
         this.syncQualityVideo();
       });
 
-      // Quality video events
       this.qualityVideo.addEventListener("loadedmetadata", () => {
-        console.log(
-          "Quality video metadata loaded, duration:",
-          this.qualityVideo.duration
-        );
         this.setInitialTime(this.qualityVideo);
       });
 
       this.qualityVideo.addEventListener("loadeddata", () => {
-        console.log("Quality video data loaded");
         this.isQualityLoaded = true;
         this.setInitialTime(this.qualityVideo);
       });
 
       this.qualityVideo.addEventListener("canplaythrough", () => {
-        console.log("Quality video can play through");
         if (!this.isQualityLoaded) {
           this.isQualityLoaded = true;
-          // Only switch if compressed is playing and we haven't switched yet
           if (
             this.isCompressedPlaying &&
             !this.hasSwitchedToQuality &&
             !this.isQualityPlaying
           ) {
-            // Add a small delay to ensure everything is ready
             setTimeout(() => {
               this.switchToQualityVideo();
             }, 200);
@@ -291,23 +357,23 @@ const qualityId = `${componentId}-quality`;
       });
 
       this.qualityVideo.addEventListener("playing", () => {
-        console.log("Quality video playing");
         this.isQualityPlaying = true;
         this.hideElement(this.compressedVideo);
-        // Pause compressed video immediately when quality starts playing
         setTimeout(() => {
           this.compressedVideo.pause();
-          console.log("Compressed video paused");
         }, 100);
       });
 
-      // Error handling
       this.compressedVideo.addEventListener("error", (e) => {
         console.error("Compressed video error:", e, this.compressedVideo.error);
       });
 
       this.qualityVideo.addEventListener("error", (e) => {
         console.error("Quality video error:", e, this.qualityVideo.error);
+      });
+
+      window.addEventListener("resize", () => {
+        this.adjustAspectRatioForOrientation();
       });
     }
 
@@ -317,10 +383,6 @@ const qualityId = `${componentId}-quality`;
         video.duration &&
         this.startTimestamp < video.duration
       ) {
-        console.log(
-          `Setting initial time to ${this.startTimestamp}s for`,
-          video === this.compressedVideo ? "compressed" : "quality"
-        );
         video.currentTime = this.startTimestamp;
         if (video === this.compressedVideo) {
           this.hasSetInitialTime = true;
@@ -329,14 +391,10 @@ const qualityId = `${componentId}-quality`;
     }
 
     startLoading() {
-      // Start loading compressed video immediately
-      console.log("Starting to load compressed video");
       this.compressedVideo.load();
 
-      // Start loading quality video with a longer delay to avoid conflicts
       setTimeout(() => {
         if (!this.hasSwitchedToQuality) {
-          console.log("Starting to load quality video");
           this.qualityVideo.load();
         }
       }, 1000);
@@ -344,40 +402,18 @@ const qualityId = `${componentId}-quality`;
 
     startCompressedVideo() {
       if (this.isCompressedLoaded && !this.isCompressedPlaying) {
-        console.log("Attempting to start compressed video");
-
-        // Ensure we're at the right time
         if (
           Math.abs(this.compressedVideo.currentTime - this.startTimestamp) > 0.1
         ) {
-          console.log(
-            "Seeking to",
-            this.startTimestamp,
-            "from",
-            this.compressedVideo.currentTime
-          );
           this.compressedVideo.currentTime = this.startTimestamp;
         }
 
-        // Small delay to ensure seeking is complete
         setTimeout(() => {
           this.compressedVideo
             .play()
-            .then(() => {
-              console.log(
-                "Compressed video play() succeeded, current time:",
-                this.compressedVideo.currentTime
-              );
-              console.log("Video paused state:", this.compressedVideo.paused);
-              console.log(
-                "Video ready state:",
-                this.compressedVideo.readyState
-              );
-            })
+            .then(() => {})
             .catch((e) => {
               console.error("Error playing compressed video:", e);
-              // Fallback: try playing from the beginning
-              console.log("Trying fallback: playing from beginning");
               this.compressedVideo.currentTime = 0;
               this.compressedVideo.play().catch((err) => {
                 console.error("Fallback play also failed:", err);
@@ -394,7 +430,6 @@ const qualityId = `${componentId}-quality`;
         this.qualityVideo.paused &&
         !this.isQualityPlaying
       ) {
-        // Sync quality video to current time of compressed video
         this.qualityVideo.currentTime = this.compressedVideo.currentTime;
       }
     }
@@ -409,23 +444,17 @@ const qualityId = `${componentId}-quality`;
         return;
       }
 
-      console.log("Switching to quality video");
-      this.hasSwitchedToQuality = true; // Prevent multiple switches
+      this.hasSwitchedToQuality = true;
 
-      // Sync time exactly
       this.qualityVideo.currentTime = this.compressedVideo.currentTime;
 
-      // Start quality video
       this.qualityVideo
         .play()
         .then(() => {
-          console.log("Quality video play() succeeded");
-          // Smooth transition to quality video
           this.showElement(this.qualityVideo);
         })
         .catch((e) => {
           console.error("Error playing quality video:", e);
-          // Reset flag if it failed so we can try again
           this.hasSwitchedToQuality = false;
         });
     }
@@ -439,10 +468,8 @@ const qualityId = `${componentId}-quality`;
     }
   }
 
-  // Initialize when DOM is loaded
   document.addEventListener("DOMContentLoaded", initializeComponents);
 
-  // Also handle cases where script loads after DOM
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", initializeComponents);
   } else {

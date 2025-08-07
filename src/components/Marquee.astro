@@ -1,0 +1,113 @@
+---
+export interface Props {
+  direction?: "left" | "right";
+  speed?: "slow" | "normal" | "fast";
+  gap?: string; // CSS gap value (e.g., "1rem", "20px")
+  class?: string;
+}
+
+const {
+  direction = "left",
+  speed = "normal",
+  gap = "1rem",
+  class: className = "",
+} = Astro.props;
+
+// Speed mapping
+const speedValues = {
+  slow: "60s",
+  normal: "40s",
+  fast: "20s",
+};
+
+const animationDirection =
+  direction === "left" ? "scroll-left" : "scroll-right";
+const animationDuration = speedValues[speed];
+---
+
+<div
+  class={`marquee-wrapper ${className}`}
+  style={`--gap: ${gap}; --duration: ${animationDuration};`}
+>
+  <div class="marquee-container">
+    <div class={`marquee-track ${animationDirection}`}>
+      <!-- Multiple copies for seamless scrolling -->
+      <div class="marquee-items">
+        <slot />
+      </div>
+      <!-- Gap between sets -->
+      <div style={`width: ${gap}`}></div>
+      <div class="marquee-items" aria-hidden="true">
+        <slot />
+      </div>
+      <!-- Gap between sets -->
+      <div style={`width: ${gap}`}></div>
+      <div class="marquee-items" aria-hidden="true">
+        <slot />
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .marquee-wrapper {
+    position: relative;
+    width: 100%;
+  }
+
+  .marquee-container {
+    width: 100%;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .marquee-track {
+    display: flex;
+    width: max-content;
+    will-change: transform;
+  }
+
+  .marquee-items {
+    display: flex;
+    gap: var(--gap);
+    align-items: center;
+    flex-shrink: 0;
+  }
+
+  .scroll-left {
+    animation: scroll-left var(--duration) linear infinite;
+  }
+
+  .scroll-right {
+    animation: scroll-right var(--duration) linear infinite;
+  }
+
+  /* Pause on hover over any child element */
+  .marquee-wrapper:hover .marquee-track {
+    animation-play-state: paused;
+  }
+
+  /* Smooth infinite animations */
+  @keyframes scroll-left {
+    0% {
+      transform: translateX(0);
+    }
+    100% {
+      transform: translateX(calc(-100% / 3));
+    }
+  }
+
+  @keyframes scroll-right {
+    0% {
+      transform: translateX(calc(-100% / 3));
+    }
+    100% {
+      transform: translateX(0);
+    }
+  }
+
+  /* Ensure smooth scrolling performance */
+  .marquee-track * {
+    flex-shrink: 0;
+  }
+</style>

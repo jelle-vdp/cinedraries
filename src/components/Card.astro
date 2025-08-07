@@ -1,0 +1,103 @@
+---
+const { title, startDate, timeslot, location, address, moreInfoLink } =
+  Astro.props;
+
+import { datetime } from "@formkit/icons";
+import IconWrapper from "../utils/helpers.jsx";
+---
+
+<div class="card p-5 pb-14 md:pb-16 pr-10">
+  <h2
+    class="text-2xl leading-6 md:text-3xl md:leading-8 font-bold uppercase mb-8"
+  >
+    {title}
+  </h2>
+  <div class="grid grid-cols-6 gap-y-6 gap-x-4 items-end">
+    <span class="col-span-1" set:html={datetime} />
+    <p class="col-span-5 text-sm md:text-base leading-5">
+      {startDate}
+    </p>
+    <span class="col-span-1"
+      ><IconWrapper type="time" className="w-full h-auto" client:load /></span
+    >
+    <p class="col-span-5 text-sm md:text-base leading-5">
+      {timeslot}
+    </p>
+    <span class="col-span-1">
+      <IconWrapper
+        type="location"
+        className="w-full h-auto mb-2"
+        client:load
+      /></span
+    >
+    <p class="col-span-5 text-sm md:text-base">
+      <span class="block">{location}</span>
+      <span class="block leading-5">{address}</span>
+    </p>
+  </div>
+  <div class="btn-container flex items-start gap-4">
+    <a
+      class="btn-moreinfo uppercase text-sm md:text-base font-bold pt-1.5 pb-1 px-2"
+      href={moreInfoLink}>Meer info</a
+    >
+    <a
+      class="btn-subscribe text-base md:text-lg uppercase font-bold pt-2 pb-1.5 px-3"
+      href="/schrijf-je-in">Schrijf je in</a
+    >
+  </div>
+</div>
+
+<style lang="scss">
+  .card {
+    background-color: var(--black);
+    color: var(--white);
+    position: relative;
+
+    h2 {
+      position: relative;
+
+      &::after {
+        content: "";
+        position: absolute;
+        bottom: -12px;
+        left: 0;
+        height: 4px;
+        width: 100px;
+        background-color: var(--white);
+      }
+    }
+    .btn-container {
+      position: absolute;
+      top: calc(100% - 1rem);
+
+      .btn-moreinfo,
+      .btn-subscribe {
+        border: 2px solid var(--black);
+        filter: drop-shadow(6px 6px var(--black));
+        transition: all 0.5s ease-in-out;
+
+        @media (max-width: 1279px) {
+          filter: drop-shadow(4px 4px var(--black));
+        }
+
+        &:hover {
+          filter: drop-shadow(0px 0px var(--black));
+          transform: translate(6px, 6px);
+
+          @media (max-width: 1279px) {
+            transform: translate(4px, 4px);
+          }
+        }
+      }
+
+      .btn-moreinfo {
+        color: var(--black);
+        background-color: var(--yellow);
+      }
+
+      .btn-subscribe {
+        background-color: var(--red);
+      }
+    }
+  }
+</style>
