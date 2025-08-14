@@ -3,7 +3,7 @@ import Image from "astro/components/Image.astro";
 import logo from "../assets/img/logo.webp";
 ---
 
-<header>
+<header class="fixed inset w-full z-50 lg:relative">
   <div
     class="container relative mx-auto px-4 lg:px-10 2xl:px-16 3xl:px-28 flex justify-end h-[12vh] xl:h-[17vh] 2xl:h-[15vh]"
   >
@@ -32,7 +32,7 @@ import logo from "../assets/img/logo.webp";
         <span class="block text-center">je in</span></a
       >
     </nav>
-    <button class="hamburger h-24 flex items-center justify-center lg:hidden">
+    <button class="hamburger flex items-center justify-center lg:hidden">
       <span class="line"></span>
     </button>
   </div>
@@ -42,6 +42,7 @@ import logo from "../assets/img/logo.webp";
   header {
     @media (max-width: 1023px) {
       border-bottom: 2px solid var(--black);
+      background-color: var(--yellow);
     }
 
     img {
@@ -107,6 +108,11 @@ import logo from "../assets/img/logo.webp";
         border: 2px solid var(--black);
         border-top: 0;
 
+        @media (max-width: 479px) {
+          padding-top: 4rem;
+          padding-bottom: 4rem;
+        }
+
         a:not(:last-child):not(:nth-last-child(2)) {
           position: relative;
 
@@ -158,9 +164,9 @@ import logo from "../assets/img/logo.webp";
       }
 
       &.hamburger--open {
-        transform: rotate(45deg);
-
         .line {
+          transform: rotate(45deg); // Move the rotation here instead
+
           &::after {
             opacity: 0;
           }
@@ -176,8 +182,12 @@ import logo from "../assets/img/logo.webp";
 <script>
   const toggleButton = document.querySelector(".hamburger");
   const navigationWrapper = document.querySelector(".navigation-wrapper");
+  const main = document.querySelector("main");
+  const footer = document.querySelector("footer");
   toggleButton.addEventListener("click", () => {
     toggleButton.classList.toggle("hamburger--open");
     navigationWrapper.classList.toggle("navigation-wrapper--open");
+    main.classList.toggle("dark");
+    footer.classList.toggle("dark");
   });
 </script>

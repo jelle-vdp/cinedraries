@@ -9,7 +9,7 @@ import Footer from "../components/Footer.astro";
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.png" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -27,3 +27,25 @@ import Footer from "../components/Footer.astro";
     <Footer />
   </body>
 </html>
+
+<style lang="scss">
+  @media (max-width: 1023px) {
+    main {
+      position: relative;
+      padding-top: 12vh;
+      &::before {
+        content: "";
+        position: absolute;
+        top: -400px;
+        left: 0;
+        width: 100%;
+        height: calc(100% + 400px);
+        transition: all 2s ease-in-out;
+        z-index: 49;
+      }
+      &.dark::before {
+        background-color: rgba(0, 0, 0, 0.8);
+      }
+    }
+  }
+</style>

@@ -1,0 +1,170 @@
+---
+import Layout from "../layouts/Layout.astro";
+
+import Image from "astro/components/Image.astro";
+
+import cinemaRix from "../assets/img/cinemarix.webp";
+
+import GLightboxWrapper from "../components/GLightboxWrapper.astro";
+import GoogleMap from "../components/GoogleMap.astro";
+---
+
+<Layout>
+  <div class="container mx-auto mt-8 mb-16 lg:my-28">
+    <section class="flex flex-col">
+      <div
+        class="info px-8 sm:px-0 mx-auto grid grid-cols-1 sm:grid-cols-12 gap-12 xl:gap-14 2xl:w-2/3"
+      >
+        <GLightboxWrapper
+          src={cinemaRix.src}
+          alt="Cinema Rix in Deurne"
+          class="col-span-1 sm:col-span-12 lg:col-span-7 xl:col-span-6"
+        >
+          <Image src={cinemaRix} alt="Cinema Rix - Deurne" />
+        </GLightboxWrapper>
+        <div
+          class="info-inner col-span-1 sm:col-span-12 sm:col-span-8 sm:col-start-3 sm:text-center lg:text-left lg:col-span-5 xl:col-span-6"
+        >
+          <h1
+            class="uppercase font-bold text-3xl xl:text-4xl mb-6 flex flex-col leading-7 md:leading-none"
+          >
+            Cinédraries Antwerpen
+          </h1>
+          <p class="mb-8">
+            Hier begon het allemaal. In Cinema Rix, een gezellige buurtcinema in
+            Deurne, draaien we sinds 2019. Ondertussen zijn we toe aan ons zesde
+            jaar, met een enthousiaste crew en een hechte groep jonge makers.
+            Onze coaches geven les over scenario, beeldtaal en videocontent. Je
+            leert hoe een film tot leven komt — van idee tot montage, van eerste
+            shot tot eindgeneriek.
+          </p>
+          <h3 class="font-bold uppercase text-2xl mb-4">Praktisch</h3>
+          <ul class="mb-6">
+            <li>Elke vrijdagavond van 18u30 tot 21u</li>
+            <li>Adres: Cinema Rix, Gryspeerstraat 86, 2100 Deurne</li>
+            <li>
+              Contact: <a href="mailto:manueljanssens1@gmail.com"
+                >manueljanssens1@gmail.com</a
+              >
+            </li>
+          </ul>
+          <a
+            href="/schrijf-je-in"
+            class="cta px-3 py-2 xl:px-4 xl:py-3 uppercase font-bold"
+            >Schrijf je hier in</a
+          >
+        </div>
+      </div>
+    </section>
+  </div>
+  <GoogleMap
+    lat={51.227004}
+    lng={4.450894}
+    title="Cinédraries Antwerpen"
+    address="Gryspeersstraat 86, 2100 Deurne"
+    class="google-map"
+  />
+
+  <style lang="scss">
+    .info {
+      h1 {
+        position: relative;
+
+        &::after {
+          content: "";
+          position: absolute;
+          left: 0;
+          bottom: -6px;
+          height: 4px;
+          width: 200px;
+          background-color: var(--black);
+
+          @media (max-width: 1023px) and (min-width: 640px) {
+            left: 50%;
+            transform: translateX(-50%);
+          }
+        }
+      }
+
+      h3 {
+        position: relative;
+
+        &::after {
+          content: "";
+          position: absolute;
+          left: 0;
+          bottom: -6px;
+          height: 4px;
+          width: 100px;
+          background-color: var(--black);
+
+          @media (max-width: 1023px) and (min-width: 640px) {
+            left: 50%;
+            transform: translateX(-50%);
+          }
+        }
+      }
+
+      ul {
+        li {
+          a {
+            position: relative;
+
+            &::after {
+              content: "";
+              position: absolute;
+              left: 50%;
+              transform: translateX(-50%);
+              bottom: -6px;
+              height: 2px;
+              width: 0;
+              background-color: var(--black);
+              transition: all 0.5s ease-in-out;
+            }
+
+            &:hover {
+              &::after {
+                width: 100%;
+              }
+            }
+          }
+        }
+      }
+
+      img {
+        border: 2px solid var(--black);
+        box-shadow: 8px 8px var(--black);
+
+        @media (max-width: 1279px) {
+          box-shadow: 6px 6px var(--black);
+        }
+
+        @media (max-width: 639px) {
+          box-shadow: 4px 4px var(--black);
+        }
+      }
+
+      .cta {
+        background-color: var(--red);
+        color: var(--white);
+        border: 2px solid var(--black);
+        filter: drop-shadow(8px 8px var(--black));
+        transition: all 0.5s ease-in-out;
+        display: inline-block;
+
+        @media (max-width: 1279px) {
+          filter: drop-shadow(4px 4px var(--black));
+        }
+
+        &:hover {
+          transform: translate(8px, 8px);
+          filter: drop-shadow(0px 0px var(--black));
+
+          @media (max-width: 1279px) {
+            transform: translate(4px, 4px);
+          }
+        }
+      }
+    }
+  </style>
+</Layout>

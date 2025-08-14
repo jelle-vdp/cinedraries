@@ -1,0 +1,231 @@
+---
+const { lat, lng, title, address, class: className } = Astro.props;
+
+const mapStyle = [
+  {
+    stylers: [{ hue: "#f0b236" }, { saturation: 89 }],
+  },
+  {
+    featureType: "water",
+    stylers: [{ color: "#ffffff" }],
+  },
+  {
+    featureType: "administrative.country",
+    elementType: "labels",
+    stylers: [{ visibility: "off" }],
+  },
+  {
+    featureType: "poi",
+    elementType: "all",
+    stylers: [
+      { hue: "#ff0000" }, // Red hue for POI markers
+      { saturation: 50 }, // Adjust saturation
+      { lightness: 10 }, // Adjust brightness
+    ],
+  },
+  // Style business markers specifically
+  {
+    featureType: "poi.business",
+    elementType: "all",
+    stylers: [
+      { hue: "#d63823" }, // Orange hue for businesses
+      { saturation: 60 },
+    ],
+  },
+];
+
+// Get API key from environment variables
+const API_KEY = import.meta.env.PUBLIC_GOOGLE_MAPS_API_KEY;
+
+if (!API_KEY) {
+  throw new Error(
+    "Google Maps API key not found. Please set PUBLIC_GOOGLE_MAPS_API_KEY in your .env file"
+  );
+}
+
+// Custom marker icon - make sure this file exists in /public/assets/img/
+const markerIcon = "/assets/img/logo.webp";
+
+// Make variables JSON-safe for client-side use
+const LAT_JS = JSON.stringify(lat);
+const LNG_JS = JSON.stringify(lng);
+const TITLE_JS = JSON.stringify(title);
+const ADDRESS_JS = JSON.stringify(address);
+const STYLE_JS = JSON.stringify(mapStyle);
+const ICON_JS = JSON.stringify(markerIcon);
+
+// Generate unique ID for this map instance
+const mapId = `map-${Math.random().toString(36).substr(2, 9)}`;
+---
+
+<div id={mapId} class={className}></div>
+
+<script
+  define:vars={{
+    LAT_JS,
+    LNG_JS,
+    TITLE_JS,
+    ADDRESS_JS,
+    STYLE_JS,
+    ICON_JS,
+    mapId,
+  }}
+>
+  const LAT = JSON.parse(LAT_JS);
+  const LNG = JSON.parse(LNG_JS);
+  const TITLE = JSON.parse(TITLE_JS);
+  const ADDRESS = JSON.parse(ADDRESS_JS);
+  const MAP_STYLE = JSON.parse(STYLE_JS);
+  const MARKER_ICON = JSON.parse(ICON_JS);
+
+  function getZoomLevel() {
+    return window.innerWidth <= 766 ? 16 : 17;
+  }
+
+  async function initMap() {
+    const center = { lat: LAT, lng: LNG };
+
+    // Check if the map container exists
+    const mapElement = document.getElementById(mapId);
+    if (!mapElement) {
+      console.error(`Map container with ID ${mapId} not found`);
+      return;
+    }
+
+    // Check if Google Maps API is loaded
+    if (typeof google === "undefined" || !google.maps) {
+      console.error("Google Maps API not loaded");
+      return;
+    }
+
+    // Create the map with styles and disabled controls
+    const map = new google.maps.Map(mapElement, {
+      zoom: getZoomLevel(),
+      center: center,
+      styles: MAP_STYLE, // This applies the custom styling
+      mapTypeControl: false, // Hides the "kaart/satelliet" buttons
+      mapTypeId: google.maps.MapTypeId.ROADMAP, // Force roadmap (kaart) only
+      disableDefaultUI: false,
+      streetViewControl: false,
+      scrollwheel: true,
+    });
+
+    // Use the classic Marker with bigger size
+    const marker = new google.maps.Marker({
+      position: center,
+      map: map,
+      icon: {
+        url: MARKER_ICON,
+        scaledSize: new google.maps.Size(100, 110), // Made it bigger (was 40x40)
+        origin: new google.maps.Point(0, 0),
+        anchor: new google.maps.Point(30, 60), // Adjust anchor for bigger size
+      },
+      title: TITLE,
+    });
+
+    // Test if the image loads
+    const testImg = new Image();
+    testImg.onload = () => {
+      console.log("Custom marker image loaded successfully");
+    };
+    testImg.onerror = () => {
+      console.warn(
+        "Custom marker image failed to load, check if file exists at:",
+        MARKER_ICON
+      );
+    };
+    testImg.src = MARKER_ICON;
+
+    // Define reusable style strings for cleaner code
+    const infoWindowStyles = {
+      container:
+        "font-family: 'Josefin Sans', sans-serif; border-radius: 0 !important; font-size: 14px; max-width: 250px; min-height: 60px; padding: 0; margin: 0;",
+      header: "",
+      title:
+        "font-size: 18px; display: block; margin-bottom: 4px; font-weight: bold;",
+      address:
+        "opacity: 0.9; line-height: 1.4; font-size: 14px; font-weight:600",
+      footer:
+        "padding: 8px 12px; background: white; border-radius: 0 0 8px 8px; margin: 0;",
+      footerText: "color: #666; font-size: 14px; font-weight: 500",
+    };
+
+    const infoWindow = new google.maps.InfoWindow({
+      content: `<div style="${infoWindowStyles.container}">
+                  <div style="${infoWindowStyles.header}">
+                    <span style="${infoWindowStyles.title}">${TITLE}</span>
+                    <span style="${infoWindowStyles.address}">${ADDRESS}</span>
+                  </div>
+                  <div style="${infoWindowStyles.footer}">
+                    <span style="${infoWindowStyles.footerText}"></span>
+                  </div>
+                </div>`,
+      disableAutoPan: false,
+      maxWidth: 300,
+    });
+
+    marker.addListener("click", () => {
+      infoWindow.open(map, marker);
+    });
+
+    // Optional: Close info window when clicking on map
+    map.addListener("click", () => {
+      infoWindow.close();
+    });
+
+    console.log("Map initialized with custom styling and marker");
+  }
+
+  // Proper async loading pattern
+  function handleGoogleMapsLoad() {
+    if (typeof google !== "undefined" && google.maps) {
+      initMap().catch(console.error);
+    } else {
+      console.error("Google Maps failed to load properly");
+    }
+  }
+
+  // Set global callback
+  window.initGoogleMap = handleGoogleMapsLoad;
+
+  window.addEventListener("resize", () => {
+    const newZoom = getZoomLevel();
+    if (map.getZoom() !== newZoom) {
+      map.setZoom(newZoom);
+    }
+  });
+</script>
+
+<!-- Load Google Maps API without the marker library -->
+<script
+  src={`https://maps.googleapis.com/maps/api/js?key=${API_KEY}&callback=initGoogleMap&loading=async`}
+  async
+  defer></script>
+
+<style>
+  [id^="map-"] {
+    width: 100%;
+    height: 600px;
+    border-top: 2px solid var(--black);
+  }
+
+  /* Loading state */
+  [id^="map-"]:empty::before {
+    content: "Loading map...";
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: #666;
+    font-family: Arial, sans-serif;
+    background-color: #f5f5f5;
+  }
+
+  /* Error state - if map fails to load */
+  [id^="map-"].error::before {
+    content: "Map failed to load. Please check your API key.";
+    background-color: #fee;
+    color: #c33;
+    border: 1px solid #fcc;
+  }
+</style>

@@ -13,13 +13,9 @@ import Marquee from "../components/Marquee.astro";
 import GLightboxWrapper from "../components/GLightboxWrapper.astro";
 import DuotoneImage from "../components/DuotoneImage.astro";
 
-const MarqueeImages = [
-  { src: "/assets/img/photos/1.webp" },
-  { src: "/assets/img/photos/2.webp" },
-  { src: "/assets/img/photos/3.webp" },
-  { src: "/assets/img/photos/4.webp" },
-  { src: "/assets/img/photos/5.webp" },
-];
+const MarqueeImages = Array.from({ length: 19 }, (_, i) => ({
+  src: `/assets/img/photos/${i + 1}.webp`,
+}));
 ---
 
 <Layout>
@@ -35,9 +31,11 @@ const MarqueeImages = [
         containerStyle="border: 2px solid var(--black); box-shadow: 8px 8px var(--black);"
         maxWidthBreakpoint1={1279}
         breakpointStyles1="box-shadow: 6px 6px var(--black);"
+        maxWidthBreakpoint2={639}
+        breakpointStyles2="box-shadow: 4px 4px var(--black);"
       />
       <p
-        class="text-left text-4xl portrait:text-5xl lg:text-6xl xl:text-7xl 2xl:text-8xl font-bold uppercase"
+        class="text-left text-3xl leading-8 xs:leading-none xs:text-4xl lg:text-5xl xl:text-7xl 2xl:text-8xl font-bold uppercase"
       >
         <span class="block">Let's</span>
         <span class="block">Make</span>
@@ -45,7 +43,7 @@ const MarqueeImages = [
       </p>
       <a
         href="schrijf-je-in"
-        class="text-right text-4xl portrait:text-5xl lg:text-6xl xl:text-7xl 2xl:text-8xl font-bold uppercase"
+        class="text-right text-3xl leading-8 xs:leading-none xs:text-4xl lg:text-5xl xl:text-7xl 2xl:text-8xl font-bold uppercase"
       >
         <span class="block">Join</span>
         <span class="block">Ciné</span>
@@ -53,7 +51,7 @@ const MarqueeImages = [
       </a>
     </section>
     <section
-      class="mx-20 md:max-w-prose md:mx-auto text-center leading-5 mb-16 md:mb-24"
+      class="xs:mx-12 sm:mx-20 md:max-w-prose md:mx-auto text-center leading-5 mb-16 md:mb-24"
     >
       <p class="mb-4">
         Cinedraries is een filmatelier voor jongeren van 16 tot 24 jaar die
@@ -68,7 +66,7 @@ const MarqueeImages = [
       </p>
     </section>
     <section
-      class="grid grid-cols-1 md:grid-cols-2 gap-16 mx-32 md:mx-0 xl:gap-8 lg:mx-32 xl:mx-52 2xl:mx-96 mb-24"
+      class="grid grid-cols-1 md:grid-cols-2 gap-16 sm:mx-32 md:mx-0 xl:gap-8 lg:mx-32 xl:mx-52 2xl:mx-96 mb-24"
     >
       <div class="col-span-1">
         <Card
@@ -93,7 +91,12 @@ const MarqueeImages = [
     </section>
   </div>
   <section class="mb-32 md:mb-48">
-    <Marquee speed="normal" class="photoreel-marquee">
+    <Marquee
+      speed="5"
+      class="photoreel-marquee"
+      responsiveSize1="1023"
+      gap="0.5rem"
+    >
       {
         MarqueeImages.map((img, i) => {
           return (
@@ -116,8 +119,7 @@ const MarqueeImages = [
                 fixedBreakpoint2Height="200px"
                 breakpoint3={767}
                 fixedBreakpoint3Height="150px"
-                aspectRatio="4/3"
-                class="cursor-zoom-in rounded-xl"
+                class="cursor-zoom-in rounded-xl mt-5 mb-3 sm:mt-6 sm:mb-4  md:mt-7 md:mb-5 lg:mt-9 lg:mb-8"
               />
             </GLightboxWrapper>
           );
@@ -131,7 +133,6 @@ const MarqueeImages = [
     .text-right {
       color: var(--white);
       position: absolute;
-      bottom: 0;
       text-shadow: 
     /* Text stroke effect */
         -2px -2px 0 var(--black),
@@ -158,10 +159,37 @@ const MarqueeImages = [
           0px 2px 0 var(--black),
           /* Drop shadow */ 4px 4px 0 var(--black);
       }
+
+      @media (min-width: 767px) {
+        bottom: 0;
+      }
+
+      @media (max-width: 479px) {
+        text-shadow: 
+        /* Text stroke effect */
+          -1px -1px 0 var(--black),
+          1px -1px 0 var(--black),
+          -1px 1px 0 var(--black),
+          1px 1px 0 var(--black),
+          -1px 0px 0 var(--black),
+          1px 0px 0 var(--black),
+          0px -1px 0 var(--black),
+          0px 1px 0 var(--black),
+          /* Drop shadow */ 3px 3px 0 var(--black);
+      }
     }
 
     .text-left {
       left: 1rem;
+
+      @media (max-width: 766px) {
+        top: 1rem;
+      }
+
+      @media (max-width: 639px) {
+        top: 0.5rem;
+        left: 0.5rem;
+      }
     }
 
     .text-right {
@@ -184,22 +212,29 @@ const MarqueeImages = [
 
         transform: translate(8px, 8px);
       }
+
+      @media (max-width: 766px) {
+        bottom: 0;
+      }
+
+      @media (max-width: 639px) {
+        bottom: 0.2rem;
+        right: 0.5rem;
+      }
     }
 
     :global(.photoreel-marquee) {
       position: relative;
-      background-color: var(
-        --black
-      ); /* Add black background to the whole marquee */
+      background-color: var(--black);
     }
 
     :global(.photoreel-marquee .marquee-track) {
-      background-color: var(--black); /* Ensure the scrolling track is black */
+      background-color: var(--black);
     }
 
     :global(.photoreel-marquee .marquee-items) {
       position: relative;
-      background-color: var(--black); /* Keep this for the items container */
+      background-color: var(--black);
 
       &::before,
       &::after {
@@ -212,6 +247,19 @@ const MarqueeImages = [
         background-repeat: repeat-x;
         z-index: 9;
         pointer-events: none;
+
+        @media (max-width: 1023px) {
+          background-size: 24px;
+          height: 24px;
+        }
+        @media (max-width: 766px) {
+          background-size: 20px;
+          height: 20px;
+        }
+        @media (max-width: 639px) {
+          background-size: 16px;
+          height: 16px;
+        }
       }
 
       &::before {

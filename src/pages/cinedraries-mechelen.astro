@@ -1,0 +1,170 @@
+---
+import Layout from "../layouts/Layout.astro";
+
+import Image from "astro/components/Image.astro";
+
+import cinemaRix from "../assets/img/cinemarix.webp";
+
+import GLightboxWrapper from "../components/GLightboxWrapper.astro";
+import GoogleMap from "../components/GoogleMap.astro";
+---
+
+<Layout>
+  <div class="container mx-auto mt-8 mb-16 lg:my-28">
+    <section class="flex flex-col">
+      <div
+        class="info px-8 sm:px-0 mx-auto grid grid-cols-1 sm:grid-cols-12 gap-12 xl:gap-14 2xl:w-2/3"
+      >
+        <GLightboxWrapper
+          src={cinemaRix.src}
+          alt="Cinema Rix in Deurne"
+          class="col-span-1 sm:col-span-12 lg:col-span-7 xl:col-span-6"
+        >
+          <Image src={cinemaRix} alt="Cinema Rix - Deurne" />
+        </GLightboxWrapper>
+        <div
+          class="info-inner col-span-1 sm:col-span-12 sm:col-span-8 sm:col-start-3 sm:text-center lg:text-left lg:col-span-5 xl:col-span-6"
+        >
+          <h1
+            class="uppercase font-bold text-3xl xl:text-4xl mb-6 flex flex-col leading-7 md:leading-none"
+          >
+            Cinédraries Mechelen
+          </h1>
+          <p class="mb-8">
+            Vanaf september 2025 starten we een nieuw traject in Cinema Lumière
+            Mechelen, met Robbin Rooze als coach. De lessen gaan door in het
+            gezellige café van de cinema.
+          </p>
+          <h3 class="font-bold uppercase text-2xl mb-4">Praktisch</h3>
+          <ul class="mb-6">
+            <li>Elke woensdagavond van 19u tot 21u30</li>
+            <li>
+              Adres: Cinema Lumière Mechelen, Frederik De Merodestraat 28, 2800
+              Mechelen
+            </li>
+            <li>
+              Contact: <a href="mailto:rooze_robbin@hotmail.be"
+                >rooze_robbin@hotmail.be</a
+              >
+            </li>
+          </ul>
+          <a
+            href="/schrijf-je-in"
+            class="cta px-3 py-2 xl:px-4 xl:py-3 uppercase font-bold"
+            >Schrijf je hier in</a
+          >
+        </div>
+      </div>
+    </section>
+  </div>
+  <GoogleMap
+    lat={51.030218727558534}
+    lng={4.482031527617157}
+    title="Cinédraries Mechelen"
+    address="Frederik De Merodestraat 28, 2800 Mechelen"
+    class="google-map"
+  />
+
+  <style lang="scss">
+    .info {
+      h1 {
+        position: relative;
+
+        &::after {
+          content: "";
+          position: absolute;
+          left: 0;
+          bottom: -6px;
+          height: 4px;
+          width: 200px;
+          background-color: var(--black);
+
+          @media (max-width: 1023px) and (min-width: 640px) {
+            left: 50%;
+            transform: translateX(-50%);
+          }
+        }
+      }
+
+      h3 {
+        position: relative;
+
+        &::after {
+          content: "";
+          position: absolute;
+          left: 0;
+          bottom: -6px;
+          height: 4px;
+          width: 100px;
+          background-color: var(--black);
+
+          @media (max-width: 1023px) and (min-width: 640px) {
+            left: 50%;
+            transform: translateX(-50%);
+          }
+        }
+      }
+
+      ul {
+        li {
+          a {
+            position: relative;
+
+            &::after {
+              content: "";
+              position: absolute;
+              left: 50%;
+              transform: translateX(-50%);
+              bottom: -6px;
+              height: 2px;
+              width: 0;
+              background-color: var(--black);
+              transition: all 0.5s ease-in-out;
+            }
+
+            &:hover {
+              &::after {
+                width: 100%;
+              }
+            }
+          }
+        }
+      }
+
+      img {
+        border: 2px solid var(--black);
+        box-shadow: 8px 8px var(--black);
+
+        @media (max-width: 1279px) {
+          box-shadow: 6px 6px var(--black);
+        }
+
+        @media (max-width: 639px) {
+          box-shadow: 4px 4px var(--black);
+        }
+      }
+
+      .cta {
+        background-color: var(--red);
+        color: var(--white);
+        border: 2px solid var(--black);
+        filter: drop-shadow(8px 8px var(--black));
+        transition: all 0.5s ease-in-out;
+        display: inline-block;
+
+        @media (max-width: 1279px) {
+          filter: drop-shadow(4px 4px var(--black));
+        }
+
+        &:hover {
+          transform: translate(8px, 8px);
+          filter: drop-shadow(0px 0px var(--black));
+
+          @media (max-width: 1279px) {
+            transform: translate(4px, 4px);
+          }
+        }
+      }
+    }
+  </style>
+</Layout>

@@ -1,32 +1,74 @@
 ---
 export interface Props {
   direction?: "left" | "right";
-  speed?: "slow" | "normal" | "fast";
+  speedRate?: number; // Speed rate from 1 (slowest) to 10 (fastest)
   gap?: string; // CSS gap value (e.g., "1rem", "20px")
+
+  // Multiple responsive breakpoints (up to 5)
+  responsiveSize1?: string;
+  responsiveGap1?: string;
+  responsiveSize2?: string;
+  responsiveGap2?: string;
+  responsiveSize3?: string;
+  responsiveGap3?: string;
+  responsiveSize4?: string;
+  responsiveGap4?: string;
+  responsiveSize5?: string;
+  responsiveGap5?: string;
+
   class?: string;
 }
 
 const {
   direction = "left",
-  speed = "normal",
+  speedRate = 5,
   gap = "1rem",
+  responsiveSize1,
+  responsiveGap1,
+  responsiveSize2,
+  responsiveGap2,
+  responsiveSize3,
+  responsiveGap3,
+  responsiveSize4,
+  responsiveGap4,
+  responsiveSize5,
+  responsiveGap5,
   class: className = "",
 } = Astro.props;
 
-// Speed mapping
-const speedValues = {
-  slow: "60s",
-  normal: "40s",
-  fast: "20s",
-};
+// Clamp speed rate between 1 and 10
+const clampedSpeedRate = Math.max(1, Math.min(10, speedRate));
+
+// Calculate duration based on speed rate (1 = 100s, 10 = 10s)
+// Linear interpolation: duration = 110 - (speedRate * 10)
+const animationDuration = `${110 - clampedSpeedRate * 10}s`;
 
 const animationDirection =
   direction === "left" ? "scroll-left" : "scroll-right";
-const animationDuration = speedValues[speed];
+
+// Generate unique class name for responsive styles
+const uniqueId = `marquee-${Math.random().toString(36).substr(2, 9)}`;
+
+// Collect responsive breakpoints
+const responsiveBreakpoints = [
+  { size: responsiveSize1, gap: responsiveGap1 },
+  { size: responsiveSize2, gap: responsiveGap2 },
+  { size: responsiveSize3, gap: responsiveGap3 },
+  { size: responsiveSize4, gap: responsiveGap4 },
+  { size: responsiveSize5, gap: responsiveGap5 },
+].filter((bp) => bp.size && bp.gap);
+
+// Generate responsive CSS
+const responsiveCSS = responsiveBreakpoints
+  .map(
+    (bp) =>
+      `@media (max-width: ${bp.size}) { .${uniqueId} { --gap: ${bp.gap}; } }`
+  )
+  .join("\n");
 ---
 
 <div
-  class={`marquee-wrapper ${className}`}
+  class={`marquee-wrapper ${className} ${uniqueId}`}
   style={`--gap: ${gap}; --duration: ${animationDuration};`}
 >
   <div class="marquee-container">
@@ -36,12 +78,12 @@ const animationDuration = speedValues[speed];
         <slot />
       </div>
       <!-- Gap between sets -->
-      <div style={`width: ${gap}`}></div>
+      <div style={`width: var(--gap)`}></div>
       <div class="marquee-items" aria-hidden="true">
         <slot />
       </div>
       <!-- Gap between sets -->
-      <div style={`width: ${gap}`}></div>
+      <div style={`width: var(--gap)`}></div>
       <div class="marquee-items" aria-hidden="true">
         <slot />
       </div>
@@ -111,3 +153,5 @@ const animationDuration = speedValues[speed];
     flex-shrink: 0;
   }
 </style>
+
+{responsiveCSS && <style set:html={responsiveCSS} />}
